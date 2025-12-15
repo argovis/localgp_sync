@@ -13,8 +13,8 @@ spec:
   - name: schema
     imagePullPolicy: Always
     image: argovis/localgp:populate
-    #command: ['sleep', '1000000']
-    command: ['python', 'populate_db.py', '/tmp/localgp/integrals/potential_temperature/15_50', 'localGPintegral', 'fullFieldGrid', 'potential_temperature', 'degC*m', 'Potential temperature integral']
+    command: ['sleep', '1000000']
+    #command: ['python', 'populate_db.py', '/tmp/localgp/integrals/potential_temperature/15_50', 'localGPintegral', 'fullFieldGrid', 'potential_temperature', 'degC*m', 'Potential temperature integral']
     volumeMounts:
       - mountPath: "/tmp/localgp"
         name: localgp
