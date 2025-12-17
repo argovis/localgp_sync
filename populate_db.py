@@ -156,6 +156,21 @@ for file in files:
 
     for i in range(len(lat)):
         for j in range(len(lon)):
+
+            # need a spatial mask; choosing RG at 50 dbar
+            maskid = timestamp.strftime('%Y%m%d%H%M%S') + '_' + str(tidylon(lon[j])) + '_' + str(lat[i])
+            mask = db.rg09.find_one({
+                "_id": maskid
+            })
+            keep_point = False
+            try:
+                if not (numpy.isnan(mask['data'][0][5]) or mask['data'][0][5] is None):  # 50 dbar is index 5
+                    keep_point = True
+            except:
+                pass
+            if not keep_point:
+                continue
+
             _id = timestamp.strftime('%Y%m%d%H%M%S') + '_' + str(tidylon(lon[j])) + '_' + str(lat[i])
             geolocation = {
                 'type': 'Point',
@@ -169,7 +184,7 @@ for file in files:
                 if numpy.isnan(datavector[0]):
                     continue # don't make a new doc until there's something to actually put in it
                 data = [[None]*(len(levels))]*len(variables) # just in case this data doc didn't get written at all for the previous levels due to all NaNs
-                data[variable_position][level_position] = datavector[0]
+                data[variable_position][level_position] = datavector[0] - 273.15*(integration_region[1]-integration_region[0]) # convert from K to C*dbar
                 data_doc = {
                     '_id': _id,
                     'metadata': [metaid],
@@ -190,7 +205,7 @@ for file in files:
                     existing_doc['data'].insert(variable_position, [None]*len(levels))
 
                 ## insert data and update document
-                existing_doc['data'][variable_position][level_position] = datavector[0]
+                existing_doc['data'][variable_position][level_position] = datavector[0] - 273.15*(integration_region[1]-integration_region[0])
                 db[collection].replace_one({'_id': _id}, existing_doc)
     
 
